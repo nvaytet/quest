@@ -12,7 +12,7 @@ class Participant:
 
     def __init__(self,
                  name: str,
-                 knights: list,
+                 knights: dict,
                  rounds_won: int = 0,
                  matches_won: int = 0):
         self.name = name

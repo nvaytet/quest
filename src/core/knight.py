@@ -3,11 +3,11 @@ import turtle
 import uuid
 from typing import Any
 
-SPEED = {'scout': 45, 'warrior': 60, 'healer': 60}
-MAX_SPEED = {'scout': 90, 'warrior': 150, 'healer': 210}
-MAX_HEALTH = {'scout': 70, 'warrior': 100, 'healer': 100}
-ATTACK = {'scout': 20, 'warrior': 30, 'healer': 10}
-VIEW_RADIUS = {'scout': 150, 'warrior': 100, 'healer': 100}
+SPEED = {'scout': 45, 'warrior': 60, 'healer': 60, 'king': 0}
+MAX_SPEED = {'scout': 90, 'warrior': 150, 'healer': 210, 'king': 0}
+MAX_HEALTH = {'scout': 70, 'warrior': 100, 'healer': 100, 'king': 100}
+ATTACK = {'scout': 20, 'warrior': 30, 'healer': 10, 'king': 0}
+VIEW_RADIUS = {'scout': 150, 'warrior': 100, 'healer': 100, 'king': 0}
 
 
 class Knight:
@@ -97,13 +97,14 @@ class Knight:
 
     def advance_dt(self, t: float, dt: float, info: dict):
         self.cooldown = max(self.cooldown - dt, 0)
+        # print('dt', dt, 15. * dt)
         if self.avatar.distance(self.fountain['x'],
                                 self.fountain['y']) <= self.fountain['size']:
             self.heal(15. * dt)
         if self.kind == 'healer':
             for friend in info['friends']:
                 if self.get_distance(friend.position) < self.view_radius:
-                    friend.heal(15. * dt)
+                    friend.heal(1. * dt)
 
     def execute_ai(self, t: float, dt: float, info: dict, safe: bool = False):
         if safe:
@@ -113,14 +114,24 @@ class Knight:
                 pass
         else:
             self.ai.exec(t, dt, info)
-        if sum([
-                bool(self.ai.heading),
-                bool(self.ai.goto),
-                bool(self.ai.left),
-                bool(self.ai.right)
-        ]) > 1:
-            print('Warning, more than one AI property is set, '
-                  'results may be unpredictable!')
+        # nprops = 0
+        # if self.ai.heading:
+        #     nprops += 1
+        # if self.ai.goto:
+        #     nprops += 1
+        # if self.ai.left:
+        #     nprops += 1
+        # if self.ai.right:
+        #     nprops += 1
+        # # if sum([
+        # #         bool(self.ai.heading),
+        # #         bool(self.ai.goto),
+        # #         bool(self.ai.left),
+        # #         bool(self.ai.right)
+        # # ]) > 1:
+        # if nprops > 1:
+        #     print('Warning, more than one AI property is set, '
+        #           'results may be unpredictable!')
         # try:
         if self.ai.heading is not None:
             self.heading = self.ai.heading

@@ -1,10 +1,12 @@
+from functools import partial
+import numpy as np
+import time
+
 from game_map import Map
 from graphics import Graphics
 from fight import fight
 from knight import Knight
-
-import numpy as np
-import time
+from ai import BaseAI
 
 
 def make_properties_dict(knight):
@@ -74,6 +76,18 @@ class Engine:
                            fountain=self.map._fountains[team],
                            number=n,
                            AI=ai))
+            # Add a king
+            king = Knight(x=self.map._castles[team]['x'],
+                          y=self.map._castles[team]['y'],
+                          heading=0,
+                          name='King',
+                          team=team,
+                          castle=self.map._castles[team],
+                          fountain=self.map._fountains[team],
+                          number=n + 1,
+                          AI=partial(BaseAI, kind='king', creator=''))
+            # king.ai.stop = True
+            self.knights.append(king)
 
         self.graphics.initialize_scoreboard(knights=self.knights, score=score)
 
@@ -185,11 +199,20 @@ class Engine:
         opposing_team = 'red' if knight.team == 'blue' else 'blue'
         x, y = self.map._flags[opposing_team]
         dist_to_flag = knight.get_distance((x, y))
-        if ((dist_to_flag <= (knight.speed * dt)) and (abs(
+        if (((dist_to_flag <= (knight.speed * dt)) and (abs(
                 abs(
                     knight.avatar.towards(x, y) - knight.avatar.heading() -
-                    180) - 180) < 40)) or (dist_to_flag < 5):
+                    180) - 180) < 40)) or (dist_to_flag < 5)):
             return knight.team
+        # no_guard = True
+        # for k in self.knights:
+        #     if (k.team == opposing_team) and (k.get_distance((x, y)) < 30):
+        #         no_guard = False
+        # if no_guard and (((dist_to_flag <= (knight.speed * dt)) and (abs(
+        #         abs(
+        #             knight.avatar.towards(x, y) - knight.avatar.heading() -
+        #             180) - 180) < 40)) or (dist_to_flag < 5)):
+        #     return knight.team
 
     def run(self, safe: bool = False, fps=30):
 
@@ -204,6 +227,11 @@ class Engine:
         while t < time_limit:
             t = (time.time() - start_time) * self.speedup
             if (frame < len(frame_times)) and (t >= frame_times[frame]):
+
+                # dead_bodies = fight(knights=self.knights,
+                #                     game_map=self.map,
+                #                     t=t)
+
                 for k in self.knights:
                     info = self.get_info(knight=k)
                     k.advance_dt(t=t, dt=dt, info=info)

@@ -258,8 +258,8 @@ class Graphics:
                        align="center",
                        font=('Arial', 18, 'normal'))
 
-        red_knights = ['', '', '']
-        blue_knights = ['', '', '']
+        red_knights = ['', '', '', '']
+        blue_knights = ['', '', '', '']
         for knight in knights:
             if knight.team == 'red':
                 red_knights[
@@ -317,15 +317,15 @@ class Graphics:
 
         healthbar_dy = 15
         no_knight = ' ' * 126
-        red_knights = [no_knight for i in range(3)]
-        blue_knights = [no_knight for i in range(3)]
+        red_knights = [no_knight for i in range(4)]
+        blue_knights = [no_knight for i in range(4)]
         for knight in knights:
             perc = knight.health / knight.max_health
             if knight.team == 'red':
                 x = 0
             else:
                 x = self.nx
-            y = self.ny + 10 + ((2 - knight.number) * (healthbar_dy + 12))
+            y = self.ny + 5 + ((3 - knight.number) * (healthbar_dy + 12))
             if perc > 0.5:
                 fill = 'lime'
             elif perc < 0.2:
