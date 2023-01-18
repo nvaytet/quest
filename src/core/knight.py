@@ -97,7 +97,6 @@ class Knight:
 
     def advance_dt(self, t: float, dt: float, info: dict):
         self.cooldown = max(self.cooldown - dt, 0)
-        # print('dt', dt, 15. * dt)
         if self.avatar.distance(self.fountain['x'],
                                 self.fountain['y']) <= self.fountain['size']:
             self.heal(15. * dt)
@@ -115,24 +114,19 @@ class Knight:
                 pass
         else:
             self.ai.exec(t, dt, info)
-        # nprops = 0
-        # if self.ai.heading:
-        #     nprops += 1
-        # if self.ai.goto:
-        #     nprops += 1
-        # if self.ai.left:
-        #     nprops += 1
-        # if self.ai.right:
-        #     nprops += 1
-        # # if sum([
-        # #         bool(self.ai.heading),
-        # #         bool(self.ai.goto),
-        # #         bool(self.ai.left),
-        # #         bool(self.ai.right)
-        # # ]) > 1:
-        # if nprops > 1:
-        #     print('Warning, more than one AI property is set, '
-        #           'results may be unpredictable!')
+        if not safe:
+            nprops = 0
+            if self.ai.heading:
+                nprops += 1
+            if self.ai.goto:
+                nprops += 1
+            if self.ai.left:
+                nprops += 1
+            if self.ai.right:
+                nprops += 1
+            if nprops > 1:
+                print('Warning, more than one AI property is set, '
+                      'results may be unpredictable!')
         # try:
         if self.ai.heading is not None:
             self.heading = self.ai.heading
