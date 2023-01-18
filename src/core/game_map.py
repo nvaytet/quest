@@ -86,8 +86,6 @@ class Map:
             }
         }
 
-        self._flags = {'red': [x[0], y[0]], 'blue': [x[1], y[1]]}
-
     def _make_fountains(self):
         dist = self.ny // 3
         size = 100

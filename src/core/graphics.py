@@ -163,17 +163,6 @@ class Graphics:
             self.pen.forward(thickness)
             self.pen.end_fill()
 
-            self.pen.penup()
-            self.pen.goto(params['x'] - 0.5 * star_size,
-                          params['y'] - 0.25 * star_size)
-            self.pen.setheading(0)
-            self.pen.pendown()
-            self.pen.begin_fill()
-            for i in range(5):
-                self.pen.forward(star_size)
-                self.pen.left(360 / 2.5)
-            self.pen.end_fill()
-
     def add_fountains(self, fountains: dict):
 
         for team in ('red', 'blue'):
@@ -270,17 +259,17 @@ class Graphics:
 
         self.pen.color('red')
         self.pen.penup()
-        self.pen.goto(self.nx // 2 - 330, self.ny + 10)
+        self.pen.goto(self.nx // 2 - 330, self.ny + 5)
         self.pen.pendown()
-        self.pen.write('\n\n'.join(red_knights[i] for i in range(3)),
+        self.pen.write('\n\n'.join(red_knights[i] for i in range(4)),
                        move=False,
                        align='right',
                        font=('Arial', 10, 'normal'))
         self.pen.color('blue')
         self.pen.penup()
-        self.pen.goto(self.nx // 2 + 330, self.ny + 10)
+        self.pen.goto(self.nx // 2 + 330, self.ny + 5)
         self.pen.pendown()
-        self.pen.write('\n\n'.join(blue_knights[i] for i in range(3)),
+        self.pen.write('\n\n'.join(blue_knights[i] for i in range(4)),
                        move=False,
                        align='left',
                        font=('Arial', 10, 'normal'))
@@ -352,9 +341,9 @@ class Graphics:
                 blue_knights[knight.number] = padding + text
 
         one_text = '\n\n'.join(red_knights[i] + blue_knights[i]
-                               for i in range(3))
+                               for i in range(4))
         self.score_pen.penup()
-        self.score_pen.goto(5, self.ny + 10)
+        self.score_pen.goto(5, self.ny + 5)
         self.score_pen.color('black')
         self.score_pen.pendown()
         self.score_pen.write(one_text,
