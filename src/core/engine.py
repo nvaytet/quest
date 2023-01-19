@@ -226,6 +226,8 @@ class Engine:
                                     t=t)
                 for k in dead_bodies:
                     k.avatar.color('black')
+                    k.avatar_name.color('black')
+                    k.draw_name()
                     k.avatar_circle.clear()
                     if k.kind == 'king':
                         winner = 'red' if k.team == 'blue' else 'blue'

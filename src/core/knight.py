@@ -143,9 +143,7 @@ class Knight:
     def heal(self, value: float):
         self.health = min(self.max_health, self.health + value)
 
-    def move(self, dt: float):
-        self.avatar.forward(self.speed * dt)
-
+    def draw_circle(self):
         self.avatar_circle.clear()
         if self.cooldown > 0:
             self.avatar_circle.color('cyan')
@@ -155,6 +153,7 @@ class Knight:
         self.avatar_circle.penup()
         self.avatar_circle.color(self.team)
 
+    def draw_name(self):
         self.avatar_name.clear()
         self.avatar_name.goto(self.x, self.y)
         self.avatar_name.pendown()
@@ -163,6 +162,11 @@ class Knight:
                                align="center",
                                font=('Arial', 12, 'normal'))
         self.avatar_name.penup()
+
+    def move(self, dt: float):
+        self.avatar.forward(self.speed * dt)
+        self.draw_circle()
+        self.draw_name()
 
     def goto(self, x: float, y: float):
         angle = self.avatar.towards(x, y)
