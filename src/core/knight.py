@@ -116,13 +116,13 @@ class Knight:
             self.ai.exec(t, dt, info)
         if not safe:
             nprops = 0
-            if self.ai.heading:
+            if self.ai.heading is not None:
                 nprops += 1
-            if self.ai.goto:
+            if self.ai.goto is not None:
                 nprops += 1
-            if self.ai.left:
+            if self.ai.left is not None:
                 nprops += 1
-            if self.ai.right:
+            if self.ai.right is not None:
                 nprops += 1
             if nprops > 1:
                 print('Warning, more than one AI property is set, '

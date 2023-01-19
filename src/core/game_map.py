@@ -55,10 +55,11 @@ class Map:
         y = []
 
         for i in range(2):
-            posx = np.random.random() * 0.5 * dx + dx
+            posx = np.random.randint(2, 4) * self.ng + 0.5 * self.ng
             if i == 1:
                 posx = self.nx - posx
-            posy = np.random.random() * (self.ny - (2 * dx)) + dx
+            posy = np.random.randint(
+                2, self.ny // self.ng - 2) * self.ng + 0.5 * self.ng
 
             self.array[int(posx - 0.5 * dx):int(posx + 0.5 * dx),
                        int(posy - 0.5 * dx):int(posy + 0.5 * dx)] = 1
