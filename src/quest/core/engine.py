@@ -1,10 +1,10 @@
-from game_map import Map
-from graphics import Graphics
-from fight import fight
-from knight import Knight
-
 import numpy as np
 import time
+
+from .game_map import Map
+from .graphics import Graphics
+from .fight import fight
+from .knight import Knight
 
 
 def make_properties_dict(knight):
@@ -62,8 +62,8 @@ class Engine:
                 name, ai = group
                 self.knights.append(
                     Knight(x=self.map._castles[team]['x'] +
-                           self.map._castles['dx'] * 0.6 *
-                           (1 - 2.0 * (int(team == 'blue'))),
+                           self.map._castles['dx'] * 0.6 * (1 - 2.0 *
+                                                            (int(team == 'blue'))),
                            y=int(self.map._castles[team]['y'] -
                                  0.5 * self.map._castles['dx'] +
                                  (n * 0.5 * self.map._castles['dx'])),
@@ -160,11 +160,10 @@ class Engine:
 
         if info['gems']:
             for x, y in zip(info['gems']['x'], info['gems']['y']):
-                if (knight.get_distance((x, y)) <=
-                    (knight.speed * dt)) and (abs(
+                if (knight.get_distance((x, y)) <= (knight.speed * dt)) and (abs(
                         abs(
-                            knight.avatar.towards(x, y) -
-                            knight.avatar.heading() - 180) - 180) < 10):
+                            knight.avatar.towards(x, y) - knight.avatar.heading() -
+                            180) - 180) < 10):
                     self.pickup_gem(x=x, y=y, team=knight.team)
                     self.map.array[x, y] = 0
                     self.graphics.erase_gem(x=x, y=y)
@@ -178,17 +177,16 @@ class Engine:
         xpos = np.minimum(np.maximum(pos[0], 0), self.map.nx - 1)
         ypos = np.minimum(np.maximum(pos[1], 0), self.map.ny - 1)
         no_obstacles = (np.sum(self.map.array[(xpos, ypos)] == 1)) == 0
-        if (above_xmin and below_xmax and above_ymin and below_ymax
-                and no_obstacles and (not knight.ai.stop)):
+        if (above_xmin and below_xmax and above_ymin and below_ymax and no_obstacles
+                and (not knight.ai.stop)):
             knight.move(dt)
 
         opposing_team = 'red' if knight.team == 'blue' else 'blue'
         x, y = self.map._flags[opposing_team]
         dist_to_flag = knight.get_distance((x, y))
         if ((dist_to_flag <= (knight.speed * dt)) and (abs(
-                abs(
-                    knight.avatar.towards(x, y) - knight.avatar.heading() -
-                    180) - 180) < 40)) or (dist_to_flag < 5):
+                abs(knight.avatar.towards(x, y) - knight.avatar.heading() - 180) - 180)
+                                                       < 40)) or (dist_to_flag < 5):
             return knight.team
 
     def run(self, safe: bool = False, fps=30):
@@ -208,8 +206,7 @@ class Engine:
                     info = self.get_info(knight=k)
                     k.advance_dt(t=t, dt=dt, info=info)
                     info['friends'] = [
-                        make_properties_dict(friend)
-                        for friend in info['friends']
+                        make_properties_dict(friend) for friend in info['friends']
                     ]
                     k.execute_ai(t=t, dt=dt, info=info, safe=safe)
                     winner = self.move(knight=k, t=t, dt=dt, info=info)
@@ -217,9 +214,7 @@ class Engine:
                         self.graphics.announce_winner(winner)
                         return winner
 
-                dead_bodies = fight(knights=self.knights,
-                                    game_map=self.map,
-                                    t=t)
+                dead_bodies = fight(knights=self.knights, game_map=self.map, t=t)
                 for k in dead_bodies:
                     k.avatar.color('black')
                     k.avatar_circle.clear()

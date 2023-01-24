@@ -1,0 +1,25 @@
+# Build artefacts
+build
+dist
+src/quest.egg-info
+
+# Caches
+*.ipynb_checkpoints
+__pycache__/
+.virtual_documents
+.pytest_cache
+.pyc
+
+# Editor config / caches
+.idea/
+.vscode/
+.vs/
+
+# Environments
+Pipfile
+venv
+
+# macOS
+.DS_Store
+*.app
+*.dmg

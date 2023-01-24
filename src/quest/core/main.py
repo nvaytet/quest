@@ -1,10 +1,5 @@
-import sys
-
-sys.path.append('../participants')
-
-from manager import Manager
-
-from templateAI import team as TemplateTeam
+from .manager import Manager
+from ..players.templateAI import team as TemplateTeam
 
 if __name__ == '__main__':
 

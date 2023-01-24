@@ -4,15 +4,18 @@ import numpy as np
 from random import shuffle
 import yaml
 import shutil
-from match import Match
 import turtle
+from typing import Union, Dict
+
+from .match import Match
+from .team import Team
 
 
 class Participant:
 
     def __init__(self,
                  name: str,
-                 knights: list,
+                 knights: Team,
                  rounds_won: int = 0,
                  matches_won: int = 0):
         self.name = name
@@ -24,9 +27,12 @@ class Participant:
         return {'rounds_won': self.rounds_won, 'matches_won': self.matches_won}
 
 
-def make_team(team):
-    creator = list(team.values())[0]().creator
-    return {creator: Participant(name=creator, knights=team)}
+def make_team(team: Union[Team, dict]) -> Dict[str, Participant]:
+    if not isinstance(team, Team):
+        creator = list(team.values())[0]().creator
+        team = Team(creator, **team)
+    team.reset_team()
+    return {team.creator: Participant(name=team.creator, knights=team)}
 
 
 class Manager:
@@ -35,9 +41,7 @@ class Manager:
 
         self.participants = {}
         for team in participants:
-            creator = list(team.values())[0]().creator
-            self.participants[creator] = Participant(name=creator,
-                                                     knights=team)
+            self.participants.update(make_team(team))
 
         self.matches = []
         self.phase = 0
@@ -146,12 +150,11 @@ class Manager:
         text += (' ' * (longest_name + 4)) + header + '\n'
         for n, (k, v) in enumerate(
                 sorted(self.participants.items(),
-                       key=lambda item:
-                       (item[1].rounds_won, item[1].matches_won),
+                       key=lambda item: (item[1].rounds_won, item[1].matches_won),
                        reverse=True)):
-            text += (str(n + 1).rjust(2) + '. ' + k.ljust(longest_name) +
-                     ':  ' + str(v.rounds_won).rjust(6) + '  ' +
-                     str(v.matches_won).rjust(7) + '\n')
+            text += (str(n + 1).rjust(2) + '. ' + k.ljust(longest_name) + ':  ' +
+                     str(v.rounds_won).rjust(6) + '  ' + str(v.matches_won).rjust(7) +
+                     '\n')
         next_match = self.next_match()
         if next_match is not None:
             for i, m in enumerate(self.matches):

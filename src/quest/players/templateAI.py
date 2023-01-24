@@ -1,5 +1,7 @@
 import numpy as np
-from ai import BaseAI
+
+from ..core.ai import BaseAI
+from ..core.team import Team
 
 CREATOR = 'JohnDoe'
 
@@ -14,8 +16,8 @@ class TemplateWarrior(BaseAI):
     def run(self, t: float, dt: float, info: dict):
         me = info['me']
 
-        if all(me['position'] == self.previous_position) or (
-                me['health'] < self.previous_health):
+        if all(me['position'] == self.previous_position) or (me['health'] <
+                                                             self.previous_health):
             self.heading = np.random.random() * 360.0
 
         elif len(info['flags']) == 2:
@@ -43,8 +45,8 @@ class TemplateScout(BaseAI):
     def run(self, t: float, dt: float, info: dict):
         me = info['me']
 
-        if all(me['position'] == self.previous_position) or (
-                me['health'] < self.previous_health):
+        if all(me['position'] == self.previous_position) or (me['health'] <
+                                                             self.previous_health):
             self.heading = np.random.random() * 360.0
 
         elif len(info['flags']) == 2:
@@ -62,8 +64,7 @@ class TemplateScout(BaseAI):
         self.previous_health = me['health']
 
 
-team = {
-    'Arthur': TemplateWarrior,
-    'Galahad': TemplateWarrior,
-    'Lancelot': TemplateScout
-}
+team = Team(CREATOR,
+            Arthur=TemplateWarrior,
+            Galahad=TemplateWarrior,
+            Lancelot=TemplateScout)

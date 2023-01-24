@@ -1,17 +1,21 @@
-from engine import Engine
-from typing import Any
+from __future__ import annotations
+from typing import Dict, Optional, TYPE_CHECKING
+
+from .engine import Engine
+if TYPE_CHECKING:
+    from .manager import Manager, Participant
 
 
 class Match:
 
     def __init__(self,
-                 red_team: dict,
-                 blue_team: dict,
+                 red_team: Dict[str, Participant],
+                 blue_team: Dict[str, Participant],
                  number: int = 1,
                  phase: int = 1,
-                 rounds: int = None,
-                 manager: Any = None,
-                 winner: str = None,
+                 rounds: Optional[int] = None,
+                 manager: Optional[Manager] = None,
+                 winner: Optional[str] = None,
                  best_of: int = 3):
         self.red_team = red_team
         self.blue_team = blue_team
@@ -67,19 +71,16 @@ class Match:
             for p in self.blue_team.values():
                 p.matches_won += 1
 
-    def play(self,
-             speedup: int = 1,
-             safe: bool = False,
-             show_messages: bool = False):
+    def play(self, speedup: int = 1, safe: bool = False, show_messages: bool = False):
         for n in range(len(self.rounds), self.best_of):
 
             if self.phase == 1:
                 red = list(self.red_team.keys())[0]
+                self.red_team[red].knights.reset_team()
                 blue = list(self.blue_team.keys())[0]
-                red_team = [(k, v)
-                            for k, v in self.red_team[red].knights.items()]
-                blue_team = [(k, v)
-                             for k, v in self.blue_team[blue].knights.items()]
+                self.blue_team[blue].knights.reset_team()
+                red_team = [(k, v) for k, v in self.red_team[red].knights.items()]
+                blue_team = [(k, v) for k, v in self.blue_team[blue].knights.items()]
             else:
                 red_team = []
                 for p in self.red_team.values():
