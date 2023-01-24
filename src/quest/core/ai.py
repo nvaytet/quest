@@ -35,10 +35,12 @@ class BaseAI:
             x = x[0]
         return ((np.arctan2(y - self._params['y'], x - self._params['x']) *
                  180 / np.pi) + 360) % 360
-
+    
+    @staticmethod
     def heading_from_vector(vec: np.ndarray) -> float:
         return ((np.arctan2(vec[1], vec[0]) * 180 / np.pi) + 360) % 360
 
+    @staticmethod
     def vector_from_heading(heading: float) -> np.ndarray:
         h = heading * np.pi / 180.0
         return np.array([np.cos(h), np.sin(h)])
