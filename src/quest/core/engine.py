@@ -39,20 +39,23 @@ class Engine:
                  blue_team: list,
                  speedup: int = 1,
                  show_messages: bool = False,
-                 mode='king'):
+                 game_mode='king'):
 
         self.ng = 32
         self.nx = self.ng * 56
         self.ny = self.ng * 30
-        self.graphics = Graphics(nx=self.nx, ny=self.ny, ng=self.ng)
+        self.graphics = Graphics(nx=self.nx,
+                                 ny=self.ny,
+                                 ng=self.ng,
+                                 game_mode=game_mode)
         self.map = Map(nx=self.nx, ny=self.ny, ng=self.ng)
         self.speedup = int(speedup)
         self._show_messages = show_messages
-        self.mode = mode
+        self.game_mode = game_mode
         self._gems_found = {'red': 0, 'blue': 0}
 
         self.graphics.add_obstacles(self.map._obstacles)
-        self.graphics.add_castles(self.map._castles, mode=self.mode)
+        self.graphics.add_castles(self.map._castles)
         self.graphics.add_fountains(self.map._fountains)
         self.graphics.add_gems(self.map._gems)
 
@@ -80,12 +83,12 @@ class Engine:
                            fountain=self.map._fountains[team],
                            number=n,
                            AI=ai))
-            if self.mode == 'king':
+            if self.game_mode == 'king':
                 # Add a king
                 king = Knight(x=self.map._castles[team]['x'],
                               y=self.map._castles[team]['y'],
                               heading=0,
-                              name='King ' + team,
+                              name='King',
                               team=team,
                               castle=self.map._castles[team],
                               fountain=self.map._fountains[team],
@@ -94,9 +97,7 @@ class Engine:
                 self.knights.append(king)
                 self.team_counts[team] += 1
 
-        self.graphics.initialize_scoreboard(knights=self.knights,
-                                            score=score,
-                                            mode=self.mode)
+        self.graphics.initialize_scoreboard(knights=self.knights, score=score)
 
     def get_local_map(self, x: float, y: float, radius: float) -> np.ndarray:
         local_map = np.full((2 * radius + 1, 2 * radius + 1), -2)
@@ -145,7 +146,7 @@ class Engine:
             'me': my_props,
         }
 
-        if self.mode == 'king':
+        if self.game_mode == 'king':
             out['castle'] = self.map._castles[knight.team]
         else:
             flags = {}
@@ -206,7 +207,7 @@ class Engine:
                 and (not knight.ai.stop)):
             knight.move(dt)
 
-        if self.mode == 'flag':
+        if self.game_mode == 'flag':
             opposing_team = 'red' if knight.team == 'blue' else 'blue'
             x, y = self.map._flags[opposing_team]
             dist_to_flag = knight.get_distance((x, y))
@@ -228,10 +229,10 @@ class Engine:
         self.time_limit = 180
         dt = 1. / fps
         start_time = time.time()
-        frame_times = np.linspace(dt, time_limit, int(time_limit / dt))
+        frame_times = np.linspace(dt, self.time_limit, int(self.time_limit / dt))
         dt *= self.speedup
         frame = 0
-        while t < time_limit:
+        while t < self.time_limit:
             t = (time.time() - start_time) * self.speedup
             if (frame < len(frame_times)) and (t >= frame_times[frame]):
 

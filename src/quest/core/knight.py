@@ -3,11 +3,11 @@ import turtle
 import uuid
 from typing import Any
 
-SPEED = {'scout': 45, 'warrior': 60, 'healer': 60}
-MAX_SPEED = {'scout': 90, 'warrior': 150, 'healer': 210}
-MAX_HEALTH = {'scout': 70, 'warrior': 100, 'healer': 100}
-ATTACK = {'scout': 20, 'warrior': 30, 'healer': 10}
-VIEW_RADIUS = {'scout': 150, 'warrior': 100, 'healer': 100}
+SPEED = {'scout': 45, 'warrior': 60, 'healer': 60, 'king': 0}
+MAX_SPEED = {'scout': 90, 'warrior': 150, 'healer': 210, 'king': 0}
+MAX_HEALTH = {'scout': 70, 'warrior': 100, 'healer': 100, 'king': 100}
+ATTACK = {'scout': 20, 'warrior': 30, 'healer': 10, 'king': 0}
+VIEW_RADIUS = {'scout': 150, 'warrior': 100, 'healer': 100, 'king': 0}
 
 
 class Knight:
@@ -89,8 +89,7 @@ class Knight:
     def ray_trace(self, dt: float) -> np.ndarray:
         vt = self.speed * dt
         ray = self.vector.reshape((2, 1)) * np.linspace(1, vt, int(vt) + 1)
-        return (np.array(self.avatar.position()).reshape(
-            (2, 1)) + ray).astype(int)
+        return (np.array(self.avatar.position()).reshape((2, 1)) + ray).astype(int)
 
     def get_distance(self, pos: tuple) -> float:
         return np.sqrt((pos[0] - self.x)**2 + (pos[1] - self.y)**2)
@@ -102,8 +101,9 @@ class Knight:
             self.heal(15. * dt)
         if self.kind == 'healer':
             for friend in info['friends']:
-                if self.get_distance(friend.position) < self.view_radius:
-                    friend.heal(15. * dt)
+                if (self.get_distance(friend.position) <
+                        self.view_radius) and (friend.kind != 'king'):
+                    friend.heal(2. * dt)
 
     def execute_ai(self, t: float, dt: float, info: dict, safe: bool = False):
         if safe:
@@ -113,14 +113,19 @@ class Knight:
                 pass
         else:
             self.ai.exec(t, dt, info)
-        if sum([
-                bool(self.ai.heading),
-                bool(self.ai.goto),
-                bool(self.ai.left),
-                bool(self.ai.right)
-        ]) > 1:
-            print('Warning, more than one AI property is set, '
-                  'results may be unpredictable!')
+        if not safe:
+            nprops = 0
+            if self.ai.heading is not None:
+                nprops += 1
+            if self.ai.goto is not None:
+                nprops += 1
+            if self.ai.left is not None:
+                nprops += 1
+            if self.ai.right is not None:
+                nprops += 1
+            if nprops > 1:
+                print('Warning, more than one AI property is set, '
+                      'results may be unpredictable!')
         # try:
         if self.ai.heading is not None:
             self.heading = self.ai.heading
@@ -137,9 +142,7 @@ class Knight:
     def heal(self, value: float):
         self.health = min(self.max_health, self.health + value)
 
-    def move(self, dt: float):
-        self.avatar.forward(self.speed * dt)
-
+    def draw_circle(self):
         self.avatar_circle.clear()
         if self.cooldown > 0:
             self.avatar_circle.color('cyan')
@@ -149,6 +152,7 @@ class Knight:
         self.avatar_circle.penup()
         self.avatar_circle.color(self.team)
 
+    def draw_name(self):
         self.avatar_name.clear()
         self.avatar_name.goto(self.x, self.y)
         self.avatar_name.pendown()
@@ -157,6 +161,11 @@ class Knight:
                                align="center",
                                font=('Arial', 12, 'normal'))
         self.avatar_name.penup()
+
+    def move(self, dt: float):
+        self.avatar.forward(self.speed * dt)
+        self.draw_circle()
+        self.draw_name()
 
     def goto(self, x: float, y: float):
         angle = self.avatar.towards(x, y)

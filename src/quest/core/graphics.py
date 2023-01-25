@@ -30,12 +30,12 @@ def rectangle(pen: Any,
 
 class Graphics:
 
-    def __init__(self, nx: int, ny: int, ng: int, topbar: int = 100, mode='king'):
+    def __init__(self, nx: int, ny: int, ng: int, topbar: int = 100, game_mode='king'):
         self.nx = nx
         self.ny = ny
         self.ng = ng
         self.topbar = topbar
-        self.mode = mode
+        self.game_mode = game_mode
 
         self.screen = turtle.Screen()
         self.screen.clearscreen()
@@ -124,7 +124,7 @@ class Graphics:
                       color='#2F4F4F',
                       fill=True)
 
-    def add_castles(self, castles: dict, mode: str):
+    def add_castles(self, castles: dict):
         dx = castles['dx']
         thickness = castles['thickness']
         star_size = int(castles['dx'] / 3)
@@ -164,7 +164,7 @@ class Graphics:
             self.pen.forward(thickness)
             self.pen.end_fill()
 
-            if mode == 'flag':
+            if self.game_mode == 'flag':
                 self.pen.penup()
                 self.pen.goto(params['x'] - 0.5 * star_size,
                               params['y'] - 0.25 * star_size)
@@ -217,7 +217,7 @@ class Graphics:
         self.pen.dot(r)
         self.pen.penup()
 
-    def initialize_scoreboard(self, knights: list, score: dict, mode: str):
+    def initialize_scoreboard(self, knights: list, score: dict):
         self.pen.setheading(0)
         self.pen.color('black')
         self.pen.pensize(1)
@@ -262,7 +262,7 @@ class Graphics:
 
         red_knights = ['', '', '']
         blue_knights = ['', '', '']
-        if mode == 'king':
+        if self.game_mode == 'king':
             red_knights.append('')
             blue_knights.append('')
         for knight in knights:
@@ -320,15 +320,16 @@ class Graphics:
 
         healthbar_dy = 15
         no_knight = ' ' * 126
-        red_knights = [no_knight for i in range(3)]
-        blue_knights = [no_knight for i in range(3)]
+        extra = int(self.game_mode == 'king')
+        red_knights = [no_knight for i in range(3 + extra)]
+        blue_knights = [no_knight for i in range(3 + extra)]
         for knight in knights:
             perc = knight.health / knight.max_health
             if knight.team == 'red':
                 x = 0
             else:
                 x = self.nx
-            y = self.ny + 10 + ((2 - knight.number) * (healthbar_dy + 12))
+            y = self.ny + 5 + ((2 + extra - knight.number) * (healthbar_dy + 12))
             if perc > 0.5:
                 fill = 'lime'
             elif perc < 0.2:
@@ -354,9 +355,10 @@ class Graphics:
             else:
                 blue_knights[knight.number] = padding + text
 
-        one_text = '\n\n'.join(red_knights[i] + blue_knights[i] for i in range(3))
+        one_text = '\n\n'.join(red_knights[i] + blue_knights[i]
+                               for i in range(3 + extra))
         self.score_pen.penup()
-        self.score_pen.goto(5, self.ny + 10)
+        self.score_pen.goto(5, self.ny + 5)
         self.score_pen.color('black')
         self.score_pen.pendown()
         self.score_pen.write(one_text,

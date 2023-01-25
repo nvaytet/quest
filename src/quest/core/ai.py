@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
-from abc import abstractmethod
 import numpy as np
 
 
@@ -18,9 +17,8 @@ class BaseAI:
         self.left = None
         self.right = None
 
-    @abstractmethod
-    def run(self):
-        pass
+    def run(self, *args, **kwargs):
+        return
 
     def exec(self, t: float, dt: float, info: dict):
         self.heading = None
