@@ -22,8 +22,8 @@ class Map:
         for k in range(n):
             ic = int(posx[k])
             jc = int(posy[k])
-            for i in range(max(int(ic - 0.5 * dx), 0),
-                           min(int(ic + 0.5 * dx), self.nx)):
+            for i in range(max(int(ic - 0.5 * dx), 0), min(int(ic + 0.5 * dx),
+                                                           self.nx)):
                 for j in range(max(int(jc - 0.5 * dx), 0),
                                min(int(jc + 0.5 * dx), self.ny)):
                     self.array[i, j] = 1
@@ -55,10 +55,11 @@ class Map:
         y = []
 
         for i in range(2):
-            posx = np.random.random() * 0.5 * dx + dx
+            posx = np.random.randint(2, 4) * self.ng + 0.5 * self.ng
             if i == 1:
                 posx = self.nx - posx
-            posy = np.random.random() * (self.ny - (2 * dx)) + dx
+            posy = np.random.randint(2,
+                                     self.ny // self.ng - 2) * self.ng + 0.5 * self.ng
 
             self.array[int(posx - 0.5 * dx):int(posx + 0.5 * dx),
                        int(posy - 0.5 * dx):int(posy + 0.5 * dx)] = 1
@@ -94,6 +95,6 @@ class Map:
         self._fountains = {}
         for team in ('red', 'blue'):
             posx = self._castles[team]['x']
-            posy = self._castles[team]['y'] - dist if self._castles[team][
-                'y'] > (self.ny // 2) else self._castles[team]['y'] + dist
+            posy = self._castles[team]['y'] - dist if self._castles[team]['y'] > (
+                self.ny // 2) else self._castles[team]['y'] + dist
             self._fountains[team] = {'x': posx, 'y': posy, 'size': size}
