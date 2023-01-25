@@ -1,9 +1,13 @@
+# SPDX-License-Identifier: BSD-3-Clause
+
+from functools import partial
 import numpy as np
 import time
 
+from .ai import BaseAI
+from .fight import fight
 from .game_map import Map
 from .graphics import Graphics
-from .fight import fight
 from .knight import Knight
 
 
@@ -34,7 +38,8 @@ class Engine:
                  red_team: list,
                  blue_team: list,
                  speedup: int = 1,
-                 show_messages: bool = False):
+                 show_messages: bool = False,
+                 mode='king'):
 
         self.ng = 32
         self.nx = self.ng * 56
@@ -43,6 +48,7 @@ class Engine:
         self.map = Map(nx=self.nx, ny=self.ny, ng=self.ng)
         self.speedup = int(speedup)
         self._show_messages = show_messages
+        self.mode = mode
         self._gems_found = {'red': 0, 'blue': 0}
 
         self.graphics.add_obstacles(self.map._obstacles)
@@ -74,6 +80,17 @@ class Engine:
                            fountain=self.map._fountains[team],
                            number=n,
                            AI=ai))
+            # Add a king
+            king = Knight(x=self.map._castles[team]['x'],
+                          y=self.map._castles[team]['y'],
+                          heading=0,
+                          name='King',
+                          team=team,
+                          castle=self.map._castles[team],
+                          fountain=self.map._fountains[team],
+                          number=n + 1,
+                          AI=partial(BaseAI, kind='king', creator=''))
+            self.knights.append(king)
 
         self.graphics.initialize_scoreboard(knights=self.knights, score=score)
 
@@ -116,12 +133,24 @@ class Engine:
             else:
                 my_props = props
 
-        flags = {}
-        for team in ('red', 'blue'):
-            pos = self.map._flags[team]
-            dist = knight.get_distance(pos)
-            if team == knight.team or dist < knight.view_radius:
-                flags[team] = pos
+        out = {
+            'local_map': local_map,
+            'constant_shape_map': constant_shape_map,
+            'friends': friends,
+            'enemies': enemies,
+            'me': my_props,
+        }
+
+        if self.mode == 'king':
+            out['castle'] = self.map._castles[knight.team]
+        else:
+            flags = {}
+            for team in ('red', 'blue'):
+                pos = self.map._flags[team]
+                dist = knight.get_distance(pos)
+                if team == knight.team or dist < knight.view_radius:
+                    flags[team] = pos
+            out['flags'] = flags
 
         gems = {}
         gem_inds = np.where(local_map == 2)
@@ -130,24 +159,16 @@ class Engine:
                 'x': gem_inds[0] + max(knight.x - r, 0),
                 'y': gem_inds[1] + max(knight.y - r, 0)
             }
+        out['gems'] = gems
 
-        return {
-            'local_map': local_map,
-            'constant_shape_map': constant_shape_map,
-            'friends': friends,
-            'enemies': enemies,
-            'gems': gems,
-            'flags': flags,
-            'me': my_props,
-            'fountain': self.map._fountains[knight.team]
-        }
+        return out
 
     def pickup_gem(self, x: float, y: float, team: str):
         kind_mapping = {0: ('attack', 2), 1: ('health', 4), 2: ('speed', 8)}
         kind = np.random.choice([0, 1, 2])
         bonus = np.random.random() * kind_mapping[kind][1]
         for k in self.knights:
-            if k.team == team:
+            if (k.team == team) and (k.kind != 'king'):
                 if kind == 0:
                     k.attack += int(bonus) + 1
                 elif kind == 1:

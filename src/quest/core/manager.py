@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BSD-3-Clause
+
 from pathlib import Path
 from itertools import combinations
 import numpy as np

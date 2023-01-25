@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BSD-3-Clause
+
 from __future__ import annotations
 from typing import Dict, Optional, TYPE_CHECKING
 
@@ -16,7 +18,8 @@ class Match:
                  rounds: Optional[int] = None,
                  manager: Optional[Manager] = None,
                  winner: Optional[str] = None,
-                 best_of: int = 3):
+                 best_of: int = 3,
+                 mode='king'):
         self.red_team = red_team
         self.blue_team = blue_team
         self.number = number
@@ -26,6 +29,7 @@ class Match:
         self.best_of = best_of
         self.first_to = self.best_of // 2 + 1
         self.match_winner = winner
+        self.mode = mode
 
     def to_dict(self) -> dict:
         return {
@@ -95,7 +99,8 @@ class Match:
                             red_team=red_team,
                             blue_team=blue_team,
                             speedup=speedup,
-                            show_messages=show_messages)
+                            show_messages=show_messages,
+                            mode=self.mode)
             winner = engine.run(safe=safe)
             self.update_scores(winner)
 
