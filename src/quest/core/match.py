@@ -38,7 +38,8 @@ class Match:
             'blue': list(self.blue_team.keys()),
             'rounds': self.rounds,
             'number': self.number,
-            'winner': self.match_winner
+            'winner': self.match_winner,
+            'game_mode': self.game_mode
         }
 
     def to_string(self) -> str:
