@@ -1,9 +1,13 @@
+# SPDX-License-Identifier: BSD-3-Clause
+
+from functools import partial
 import numpy as np
 import time
 
+from .ai import BaseAI
+from .fight import fight
 from .game_map import Map
 from .graphics import Graphics
-from .fight import fight
 from .knight import Knight
 
 
@@ -34,15 +38,20 @@ class Engine:
                  red_team: list,
                  blue_team: list,
                  speedup: int = 1,
-                 show_messages: bool = False):
+                 show_messages: bool = False,
+                 game_mode='king'):
 
         self.ng = 32
         self.nx = self.ng * 56
         self.ny = self.ng * 30
-        self.graphics = Graphics(nx=self.nx, ny=self.ny, ng=self.ng)
+        self.graphics = Graphics(nx=self.nx,
+                                 ny=self.ny,
+                                 ng=self.ng,
+                                 game_mode=game_mode)
         self.map = Map(nx=self.nx, ny=self.ny, ng=self.ng)
         self.speedup = int(speedup)
         self._show_messages = show_messages
+        self.game_mode = game_mode
         self._gems_found = {'red': 0, 'blue': 0}
 
         self.graphics.add_obstacles(self.map._obstacles)
@@ -74,6 +83,19 @@ class Engine:
                            fountain=self.map._fountains[team],
                            number=n,
                            AI=ai))
+            if self.game_mode == 'king':
+                # Add a king
+                king = Knight(x=self.map._castles[team]['x'],
+                              y=self.map._castles[team]['y'],
+                              heading=0,
+                              name='King',
+                              team=team,
+                              castle=self.map._castles[team],
+                              fountain=self.map._fountains[team],
+                              number=n + 1,
+                              AI=partial(BaseAI, kind='king', creator=''))
+                self.knights.append(king)
+                self.team_counts[team] += 1
 
         self.graphics.initialize_scoreboard(knights=self.knights, score=score)
 
@@ -116,12 +138,24 @@ class Engine:
             else:
                 my_props = props
 
-        flags = {}
-        for team in ('red', 'blue'):
-            pos = self.map._flags[team]
-            dist = knight.get_distance(pos)
-            if team == knight.team or dist < knight.view_radius:
-                flags[team] = pos
+        out = {
+            'local_map': local_map,
+            'constant_shape_map': constant_shape_map,
+            'friends': friends,
+            'enemies': enemies,
+            'me': my_props,
+        }
+
+        if self.game_mode == 'king':
+            out['castle'] = self.map._castles[knight.team]
+        else:
+            flags = {}
+            for team in ('red', 'blue'):
+                pos = self.map._flags[team]
+                dist = knight.get_distance(pos)
+                if team == knight.team or dist < knight.view_radius:
+                    flags[team] = pos
+            out['flags'] = flags
 
         gems = {}
         gem_inds = np.where(local_map == 2)
@@ -130,24 +164,16 @@ class Engine:
                 'x': gem_inds[0] + max(knight.x - r, 0),
                 'y': gem_inds[1] + max(knight.y - r, 0)
             }
+        out['gems'] = gems
 
-        return {
-            'local_map': local_map,
-            'constant_shape_map': constant_shape_map,
-            'friends': friends,
-            'enemies': enemies,
-            'gems': gems,
-            'flags': flags,
-            'me': my_props,
-            'fountain': self.map._fountains[knight.team]
-        }
+        return out
 
     def pickup_gem(self, x: float, y: float, team: str):
         kind_mapping = {0: ('attack', 2), 1: ('health', 4), 2: ('speed', 8)}
         kind = np.random.choice([0, 1, 2])
         bonus = np.random.random() * kind_mapping[kind][1]
         for k in self.knights:
-            if k.team == team:
+            if (k.team == team) and (k.kind != 'king'):
                 if kind == 0:
                     k.attack += int(bonus) + 1
                 elif kind == 1:
@@ -181,27 +207,35 @@ class Engine:
                 and (not knight.ai.stop)):
             knight.move(dt)
 
-        opposing_team = 'red' if knight.team == 'blue' else 'blue'
-        x, y = self.map._flags[opposing_team]
-        dist_to_flag = knight.get_distance((x, y))
-        if ((dist_to_flag <= (knight.speed * dt)) and (abs(
-                abs(knight.avatar.towards(x, y) - knight.avatar.heading() - 180) - 180)
-                                                       < 40)) or (dist_to_flag < 5):
-            return knight.team
+        if self.game_mode == 'flag':
+            opposing_team = 'red' if knight.team == 'blue' else 'blue'
+            x, y = self.map._flags[opposing_team]
+            dist_to_flag = knight.get_distance((x, y))
+            if ((dist_to_flag <= (knight.speed * dt)) and (abs(
+                    abs(knight.avatar.towards(x, y) - knight.avatar.heading() - 180) -
+                    180) < 40)) or (dist_to_flag < 5):
+                return knight.team
+
+    def announce_winner(self, t, winner):
+        self.graphics.update_scoreboard(t=t,
+                                        knights=self.knights,
+                                        time_limit=self.time_limit,
+                                        gems_found=self._gems_found)
+        self.graphics.announce_winner(winner)
 
     def run(self, safe: bool = False, fps=30):
 
         t = 0
-        time_limit = 180
-        # dt = 1.0 * self.speedup
+        self.time_limit = 180
         dt = 1. / fps
         start_time = time.time()
-        frame_times = np.linspace(dt, time_limit, int(time_limit / dt))
+        frame_times = np.linspace(dt, self.time_limit, int(self.time_limit / dt))
         dt *= self.speedup
         frame = 0
-        while t < time_limit:
+        while t < self.time_limit:
             t = (time.time() - start_time) * self.speedup
             if (frame < len(frame_times)) and (t >= frame_times[frame]):
+
                 for k in self.knights:
                     info = self.get_info(knight=k)
                     k.advance_dt(t=t, dt=dt, info=info)
@@ -211,30 +245,39 @@ class Engine:
                     k.execute_ai(t=t, dt=dt, info=info, safe=safe)
                     winner = self.move(knight=k, t=t, dt=dt, info=info)
                     if winner is not None:
-                        self.graphics.announce_winner(winner)
+                        self.announce_winner(t, winner)
                         return winner
 
                 dead_bodies = fight(knights=self.knights, game_map=self.map, t=t)
                 for k in dead_bodies:
                     k.avatar.color('black')
+                    k.avatar_name.color('black')
+                    k.draw_name()
                     k.avatar_circle.clear()
-                    self.knights.remove(k)
-                    self.team_counts[k.team] -= 1
+                    if k.kind == 'king':
+                        winner = 'red' if k.team == 'blue' else 'blue'
+                        self.announce_winner(t, winner)
+                        return winner
+                    else:
+                        self.knights.remove(k)
+                        self.team_counts[k.team] -= 1
+                    # self.knights.remove(k)
+                    # self.team_counts[k.team] -= 1
                 if self.team_counts['red'] + self.team_counts['blue'] == 0:
                     winner = None
-                    self.graphics.announce_winner(winner)
+                    self.announce_winner(t, winner)
                     return winner
                 for team in ('red', 'blue'):
                     if self.team_counts[team] == 0:
                         winner = 'red' if team == 'blue' else 'blue'
-                        self.graphics.announce_winner(winner)
+                        self.announce_winner(t, winner)
                         return winner
 
                 self.graphics.update(t=t,
                                      knights=self.knights,
-                                     time_limit=time_limit,
+                                     time_limit=self.time_limit,
                                      gems_found=self._gems_found,
                                      show_messages=self._show_messages)
                 frame += self.speedup
 
-        self.graphics.announce_winner(None)
+        self.announce_winner(self.time_limit, None)

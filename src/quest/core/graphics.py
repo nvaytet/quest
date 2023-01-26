@@ -30,11 +30,12 @@ def rectangle(pen: Any,
 
 class Graphics:
 
-    def __init__(self, nx: int, ny: int, ng: int, topbar: int = 100):
+    def __init__(self, nx: int, ny: int, ng: int, topbar: int = 100, game_mode='king'):
         self.nx = nx
         self.ny = ny
         self.ng = ng
         self.topbar = topbar
+        self.game_mode = game_mode
 
         self.screen = turtle.Screen()
         self.screen.clearscreen()
@@ -163,16 +164,17 @@ class Graphics:
             self.pen.forward(thickness)
             self.pen.end_fill()
 
-            self.pen.penup()
-            self.pen.goto(params['x'] - 0.5 * star_size,
-                          params['y'] - 0.25 * star_size)
-            self.pen.setheading(0)
-            self.pen.pendown()
-            self.pen.begin_fill()
-            for i in range(5):
-                self.pen.forward(star_size)
-                self.pen.left(360 / 2.5)
-            self.pen.end_fill()
+            if self.game_mode == 'flag':
+                self.pen.penup()
+                self.pen.goto(params['x'] - 0.5 * star_size,
+                              params['y'] - 0.25 * star_size)
+                self.pen.setheading(0)
+                self.pen.pendown()
+                self.pen.begin_fill()
+                for i in range(5):
+                    self.pen.forward(star_size)
+                    self.pen.left(360 / 2.5)
+                self.pen.end_fill()
 
     def add_fountains(self, fountains: dict):
 
@@ -260,27 +262,28 @@ class Graphics:
 
         red_knights = ['', '', '']
         blue_knights = ['', '', '']
+        if self.game_mode == 'king':
+            red_knights.append('')
+            blue_knights.append('')
         for knight in knights:
             if knight.team == 'red':
-                red_knights[
-                    knight.number] = f'{knight.name} - {knight.ai.creator}'
+                red_knights[knight.number] = f'{knight.name} - {knight.ai.creator}'
             else:
-                blue_knights[
-                    knight.number] = f'{knight.ai.creator} - {knight.name}'
+                blue_knights[knight.number] = f'{knight.ai.creator} - {knight.name}'
 
         self.pen.color('red')
         self.pen.penup()
-        self.pen.goto(self.nx // 2 - 330, self.ny + 10)
+        self.pen.goto(self.nx // 2 - 330, self.ny + 5)
         self.pen.pendown()
-        self.pen.write('\n\n'.join(red_knights[i] for i in range(3)),
+        self.pen.write('\n\n'.join(red_knights[i] for i in range(len(red_knights))),
                        move=False,
                        align='right',
                        font=('Arial', 10, 'normal'))
         self.pen.color('blue')
         self.pen.penup()
-        self.pen.goto(self.nx // 2 + 330, self.ny + 10)
+        self.pen.goto(self.nx // 2 + 330, self.ny + 5)
         self.pen.pendown()
-        self.pen.write('\n\n'.join(blue_knights[i] for i in range(3)),
+        self.pen.write('\n\n'.join(blue_knights[i] for i in range(len(blue_knights))),
                        move=False,
                        align='left',
                        font=('Arial', 10, 'normal'))
@@ -317,15 +320,16 @@ class Graphics:
 
         healthbar_dy = 15
         no_knight = ' ' * 126
-        red_knights = [no_knight for i in range(3)]
-        blue_knights = [no_knight for i in range(3)]
+        extra = int(self.game_mode == 'king')
+        red_knights = [no_knight for i in range(3 + extra)]
+        blue_knights = [no_knight for i in range(3 + extra)]
         for knight in knights:
             perc = knight.health / knight.max_health
             if knight.team == 'red':
                 x = 0
             else:
                 x = self.nx
-            y = self.ny + 10 + ((2 - knight.number) * (healthbar_dy + 12))
+            y = self.ny + 5 + ((2 + extra - knight.number) * (healthbar_dy + 12))
             if perc > 0.5:
                 fill = 'lime'
             elif perc < 0.2:
@@ -352,9 +356,9 @@ class Graphics:
                 blue_knights[knight.number] = padding + text
 
         one_text = '\n\n'.join(red_knights[i] + blue_knights[i]
-                               for i in range(3))
+                               for i in range(3 + extra))
         self.score_pen.penup()
-        self.score_pen.goto(5, self.ny + 10)
+        self.score_pen.goto(5, self.ny + 5)
         self.score_pen.color('black')
         self.score_pen.pendown()
         self.score_pen.write(one_text,

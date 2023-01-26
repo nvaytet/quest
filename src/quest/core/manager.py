@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BSD-3-Clause
+
 from pathlib import Path
 from itertools import combinations
 import numpy as np
@@ -37,11 +39,12 @@ def make_team(team: Union[Team, dict]) -> Dict[str, Participant]:
 
 class Manager:
 
-    def __init__(self, *participants):
+    def __init__(self, *participants, game_mode='kind'):
 
         self.participants = {}
         for team in participants:
             self.participants.update(make_team(team))
+        self.game_mode = game_mode
 
         self.matches = []
         self.phase = 0
@@ -65,7 +68,8 @@ class Manager:
                       blue_team={blue: self.participants[blue]},
                       number=i + 1,
                       phase=1,
-                      manager=self))
+                      manager=self,
+                      game_mode=self.game_mode))
         # Phase 2
         n_per_round = 6
         matches_per_participant = len(self.participants) - 1
@@ -93,7 +97,8 @@ class Manager:
                                      for b in blue},
                           number=len(self.matches) + 1,
                           phase=2,
-                          manager=self))
+                          manager=self,
+                          game_mode=self.game_mode))
 
                 sets += [red, blue]
                 for name in this_round:
@@ -120,7 +125,8 @@ class Manager:
                       phase=m['phase'],
                       rounds=m['rounds'],
                       manager=self,
-                      winner=m['winner']))
+                      winner=m['winner'],
+                      game_mode=m['game_mode']))
 
     def save(self):
         out = {

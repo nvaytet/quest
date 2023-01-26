@@ -29,14 +29,8 @@ notebook = [
     "ipyturtle3 >= 0.1.4"
 ]
 
-
 [tool.setuptools.packages.find]
 where = ["./src"]
-
-[tool.flake8]
-# See https://black.readthedocs.io/en/stable/the_black_code_style/current_style.html#line-length
-max-line-length = 88
-extend-ignore = "E203"
 
 [tool.yapf]
 based_on_style = "pep8"

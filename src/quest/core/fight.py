@@ -14,21 +14,20 @@ def fight(knights, game_map, t):
             combats[key][k.team].append(k)
     for key in combats:
         if set(combats[key]) == {'blue', 'red'}:
-            blue_attack = sum([
-                k.attack if k.cooldown == 0 else 0
-                for k in combats[key]['blue']
-            ])
-            red_attack = sum([
-                k.attack if k.cooldown == 0 else 0 for k in combats[key]['red']
-            ])
+            blue_attack = sum(
+                [k.attack if k.cooldown == 0 else 0 for k in combats[key]['blue']])
+            red_attack = sum(
+                [k.attack if k.cooldown == 0 else 0 for k in combats[key]['red']])
             for k in combats[key]['blue']:
-                k.health -= int(red_attack / len(combats[key]['blue']))
+                k.health = max(0,
+                               k.health - int(red_attack / len(combats[key]['blue'])))
                 if k.health <= 0:
                     dead.append(k)
                 if k.cooldown == 0:
                     k.cooldown = cooldown
             for k in combats[key]['red']:
-                k.health -= int(blue_attack / len(combats[key]['red']))
+                k.health = max(0,
+                               k.health - int(blue_attack / len(combats[key]['red'])))
                 if k.health <= 0:
                     dead.append(k)
                 if k.cooldown == 0:

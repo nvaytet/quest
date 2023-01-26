@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BSD-3-Clause
+
 import numpy as np
 
 
@@ -14,6 +16,9 @@ class BaseAI:
         self.stop = False
         self.left = None
         self.right = None
+
+    def run(self, *args, **kwargs):
+        return
 
     def exec(self, t: float, dt: float, info: dict):
         self.heading = None
@@ -33,9 +38,10 @@ class BaseAI:
         if y is None:
             y = x[1]
             x = x[0]
-        return ((np.arctan2(y - self._params['y'], x - self._params['x']) *
-                 180 / np.pi) + 360) % 360
-    
+        return (
+            (np.arctan2(y - self._params['y'], x - self._params['x']) * 180 / np.pi) +
+            360) % 360
+
     @staticmethod
     def heading_from_vector(vec: np.ndarray) -> float:
         return ((np.arctan2(vec[1], vec[0]) * 180 / np.pi) + 360) % 360
