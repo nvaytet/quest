@@ -186,10 +186,9 @@ class Engine:
 
         if info['gems']:
             for x, y in zip(info['gems']['x'], info['gems']['y']):
-                if (knight.get_distance((x, y)) <= (knight.speed * dt)) and (abs(
-                        abs(
-                            knight.avatar.towards(x, y) - knight.avatar.heading() -
-                            180) - 180) < 10):
+                if (x == knight.x and y == knight.y ) or \
+                        (knight.get_distance((x, y)) <= (knight.speed * dt)) and \
+                        (abs(abs(knight.avatar.towards(x, y) - knight.avatar.heading() -180) - 180) < 10):
                     self.pickup_gem(x=x, y=y, team=knight.team)
                     self.map.array[x, y] = 0
                     self.graphics.erase_gem(x=x, y=y)
