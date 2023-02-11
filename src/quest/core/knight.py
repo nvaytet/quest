@@ -103,7 +103,7 @@ class Knight:
             for friend in info['friends']:
                 if (self.get_distance(friend.position) <
                         self.view_radius) and (friend.kind != 'king'):
-                    friend.heal(2. * dt)
+                    friend.heal(5. * dt)
 
     def execute_ai(self, t: float, dt: float, info: dict, safe: bool = False):
         if safe:
