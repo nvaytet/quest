@@ -144,6 +144,7 @@ class Engine:
             'friends': friends,
             'enemies': enemies,
             'me': my_props,
+            'fountain': self.map._fountains[knight.team]
         }
 
         if self.game_mode == 'king':
