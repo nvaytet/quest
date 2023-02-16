@@ -97,7 +97,8 @@ class Engine:
                 self.knights.append(king)
                 self.team_counts[team] += 1
 
-        self.graphics.initialize_scoreboard(knights=self.knights, score=score)
+        self.score = score
+        self.graphics.initialize_scoreboard(knights=self.knights, score=self.score)
 
     def get_local_map(self, x: float, y: float, radius: float) -> np.ndarray:
         local_map = np.full((2 * radius + 1, 2 * radius + 1), -2)
@@ -144,7 +145,8 @@ class Engine:
             'friends': friends,
             'enemies': enemies,
             'me': my_props,
-            'fountain': self.map._fountains[knight.team]
+            'fountain': self.map._fountains[knight.team],
+            'score': self.score
         }
 
         if self.game_mode == 'king':
