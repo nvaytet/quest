@@ -39,7 +39,7 @@ def make_team(team: Union[Team, dict]) -> Dict[str, Participant]:
 
 class Manager:
 
-    def __init__(self, *participants, game_mode='kind'):
+    def __init__(self, *participants, game_mode='king'):
 
         self.participants = {}
         for team in participants:
