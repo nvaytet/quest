@@ -1,5 +1,7 @@
 # Quest
 
+![quest](https://user-images.githubusercontent.com/39047984/221511288-f58176cf-1866-4d3e-8b7e-b63f46c3d5fc.png)
+
 **AI coding challenge**
 
 Two teams of 3 knights battle it out on a map riddled with obstacles and gems.
